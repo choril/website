@@ -1,0 +1,11 @@
+# 服务器端文件
+server.js
+package.json
+package-lock.json
+data.db
+*.log
+node_modules/
+
+# 敏感信息
+.env
+*.pem

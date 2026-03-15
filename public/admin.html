@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>管理后台 - Choril</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #6366f1;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #06b6d4 100%);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        body { font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--dark); color: var(--light); min-height: 100vh; }
+        
+        .login-container {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem;
+            background: radial-gradient(ellipse at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 50%), var(--dark);
+        }
+        .login-box { background: var(--dark-light); border-radius: 20px; padding: 2rem; width: 100%; max-width: 380px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .login-box .logo { font-size: 1.8rem; font-weight: 700; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; }
+        .login-box h1 { font-size: 1.2rem; margin-bottom: 1.5rem; color: var(--gray); }
+        .form-group { margin-bottom: 1rem; text-align: left; }
+        .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 500; font-size: 0.9rem; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: var(--light); font-size: 1rem; font-family: inherit; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .btn { padding: 0.8rem 1.5rem; border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; border: none; font-size: 0.95rem; }
+        .btn-primary { background: var(--gradient); color: white; width: 100%; }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: var(--light); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        
+        .admin-container { display: none; }
+        .admin-container.active { display: block; min-height: 100vh; }
+        
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0; height: 56px;
+            background: var(--dark-light); border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 1rem;
+            z-index: 1000;
+        }
+        .top-nav .logo { font-size: 1.1rem; font-weight: 700; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .top-nav .nav-right { display: flex; align-items: center; gap: 0.8rem; }
+        .nav-icon-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.05); border: none; color: var(--light); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .main-content { padding: 70px 1rem 80px; }
+        
+        .page-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; }
+        .section-title { font-size: 1rem; font-weight: 600; margin: 1.5rem 0 0.8rem; color: var(--primary); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin-bottom: 1.5rem; }
+        .stat-card { background: var(--dark-light); border-radius: 12px; padding: 1rem; border: 1px solid rgba(255,255,255,0.05); }
+        .stat-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+        .stat-card-title { color: var(--gray); font-size: 0.75rem; }
+        .stat-card-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+        .stat-card-icon.blue { background: rgba(99, 102, 241, 0.15); color: var(--primary); }
+        .stat-card-icon.pink { background: rgba(236, 72, 153, 0.15); color: var(--secondary); }
+        .stat-card-icon.green { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .stat-card-icon.orange { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .stat-card-value { font-size: 1.5rem; font-weight: 700; }
+        
+        .data-card { background: var(--dark-light); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 1rem; overflow: hidden; }
+        .data-card-header { padding: 1rem 5rem 1rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; gap: 5rem; }
+        .data-card-header h2 { font-size: 1rem; white-space: nowrap; }
+        .refresh-btn { background: rgba(99, 102, 241, 0.1); color: var(--primary); border: none; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+        
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th, td { padding: 0.7rem 0.8rem; text-align: left; font-size: 0.85rem; }
+        th { background: rgba(255,255,255,0.02); color: var(--gray); font-weight: 500; position: sticky; top: 0; }
+        td { border-bottom: 1px solid rgba(255,255,255,0.03); white-space: nowrap; }
+        tr:last-child td { border-bottom: none; }
+        
+        .badge { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 500; }
+        .badge-admin { background: rgba(99, 102, 241, 0.15); color: var(--primary); }
+        .badge-user { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        
+        .btn-sm { padding: 0.25rem 0.4rem; font-size: 0.7rem; border-radius: 6px; cursor: pointer; border: none; white-space: nowrap; }
+        .btn-icon { width: 32px; height: 32px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border: none; font-size: 0.85rem; }
+        
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+            background: var(--dark-light); border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: space-around; align-items: center;
+            padding-bottom: env(safe-area-inset-bottom);
+            z-index: 1000;
+            overflow-x: auto;
+        }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.5rem 0.8rem; cursor: pointer; color: var(--gray); transition: all 0.2s; white-space: nowrap; }
+        .bottom-nav-item.active { color: var(--primary); }
+        .bottom-nav-item i { font-size: 1.1rem; }
+        .bottom-nav-item span { font-size: 0.65rem; }
+        
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); padding: 0.8rem 1.5rem; background: var(--dark-light); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); z-index: 3000; font-size: 0.9rem; }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        
+        .empty-state { text-align: center; padding: 2rem; color: var(--gray); font-size: 0.9rem; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--dark-light); border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 1.1rem; }
+        .modal-close { background: none; border: none; color: var(--gray); font-size: 1.5rem; cursor: pointer; }
+        .modal-body { padding: 1rem; }
+        .modal-footer { padding: 1rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 0.5rem; justify-content: flex-end; }
+        
+        .edit-item { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 1rem; margin-bottom: 0.8rem; border: 1px solid rgba(255,255,255,0.05); }
+        .edit-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .edit-item-title { font-weight: 600; font-size: 0.95rem; }
+        .edit-item-actions { display: flex; gap: 0.5rem; }
+        .edit-item-content { color: var(--gray); font-size: 0.85rem; }
+        
+        .draggable { cursor: grab; }
+        .draggable.dragging { opacity: 0.5; }
+        .drag-handle { color: var(--gray); cursor: grab; margin-right: 0.5rem; }
+        
+        .avatar-preview { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 0.5rem; }
+        .avatar-upload { display: flex; align-items: center; gap: 1rem; }
+        
+        .skill-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 0.3rem; }
+        .skill-bar-fill { height: 100%; background: var(--gradient); border-radius: 4px; transition: width 0.3s ease; }
+        
+        .history-item { padding: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .history-item:last-child { border-bottom: none; }
+        .history-action { font-size: 0.8rem; padding: 0.2rem 0.5rem; border-radius: 4px; margin-right: 0.5rem; }
+        .history-action.INSERT { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .history-action.UPDATE { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .history-action.DELETE { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        
+        /* 加载提示遮罩 */
+        .loading-overlay {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 60px;
+            background: rgba(15, 23, 42, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1500;
+        }
+        .loading-overlay.active { display: flex; }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(99, 102, 241, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .loading-text {
+            margin-top: 1rem;
+            color: var(--light);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .loading-text i { color: var(--primary); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* 顶部加载条 */
+        .loading-bar {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(99, 102, 241, 0.2);
+            z-index: 1600;
+            display: none;
+        }
+        .loading-bar.active { display: block; }
+        .loading-bar::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 30%;
+            background: var(--gradient);
+            animation: loadingBar 1.5s ease-in-out infinite;
+        }
+        @keyframes loadingBar {
+            0% { left: -30%; }
+            100% { left: 100%; }
+        }
+        
+        /* 表单优化样式 */
+        .form-group { margin-bottom: 1rem; text-align: left; position: relative; }
+        .form-group label { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.3rem;
+            margin-bottom: 0.5rem; 
+            font-weight: 500; 
+            font-size: 0.9rem; 
+            color: var(--light);
+            transition: color 0.3s;
+        }
+        .form-group label i { font-size: 0.85rem; color: var(--gray); }
+        .form-group:focus-within label { color: var(--primary); }
+        .form-group:focus-within label i { color: var(--primary); }
+        
+        .form-group input, 
+        .form-group textarea, 
+        .form-group select { 
+            width: 100%; 
+            padding: 0.8rem 1rem; 
+            border-radius: 10px; 
+            border: 2px solid rgba(255,255,255,0.1); 
+            background: rgba(255,255,255,0.05); 
+            color: var(--light); 
+            font-size: 1rem; 
+            font-family: inherit; 
+            transition: all 0.3s ease;
+        }
+        .form-group input:hover,
+        .form-group textarea:hover,
+        .form-group select:hover {
+            border-color: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+        }
+        .form-group input:focus, 
+        .form-group textarea:focus, 
+        .form-group select:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+            background: rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        .form-group input.error,
+        .form-group textarea.error,
+        .form-group select.error {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .form-group input.success,
+        .form-group textarea.success,
+        .form-group select.success {
+            border-color: var(--success);
+        }
+        
+        /* 文本域自动高度 */
+        .form-group textarea { 
+            min-height: 100px; 
+            resize: none;
+            overflow: hidden;
+            line-height: 1.5;
+        }
+        
+        /* 字数统计 */
+        .char-counter {
+            position: absolute;
+            right: 0.8rem;
+            bottom: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--gray);
+            pointer-events: none;
+        }
+        .char-counter.warning { color: var(--warning); }
+        .char-counter.error { color: var(--danger); }
+        
+        /* 输入提示 */
+        .input-hint {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin-top: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .input-hint i { font-size: 0.7rem; }
+        
+        /* 错误提示 */
+        .error-message {
+            font-size: 0.8rem;
+            color: var(--danger);
+            margin-top: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            animation: shake 0.3s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        /* 下拉框优化 */
+        .form-group select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem;
+        }
+        .form-group select option {
+            background: var(--dark-light);
+            color: var(--light);
+            padding: 0.5rem;
+        }
+        
+        /* 富文本编辑器美化 */
+        .rich-text-editor {
+            min-height: 180px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .rich-text-editor:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .rich-text-editor:focus-within {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        .rich-text-editor .ql-toolbar {
+            background: rgba(255, 255, 255, 0.03);
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.6rem 0.8rem;
+        }
+        .rich-text-editor .ql-toolbar button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            margin-right: 0.3rem;
+            color: var(--gray);
+            transition: all 0.2s;
+        }
+        .rich-text-editor .ql-toolbar button:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+            color: var(--light);
+        }
+        .rich-text-editor .ql-toolbar button.ql-active {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .rich-text-editor .ql-container {
+            border: none;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        .rich-text-editor .ql-editor {
+            min-height: 120px;
+            padding: 1rem;
+            color: var(--light);
+            line-height: 1.6;
+        }
+        .rich-text-editor .ql-editor.ql-blank::before {
+            color: var(--gray);
+            font-style: normal;
+            font-size: 0.95rem;
+        }
+        .rich-text-editor .ql-editor p { margin-bottom: 0.5rem; }
+        .rich-text-editor .ql-editor ul, 
+        .rich-text-editor .ql-editor ol { 
+            padding-left: 1.5rem; 
+            margin-bottom: 0.5rem;
+        }
+        .rich-text-editor .ql-editor li { margin-bottom: 0.3rem; }
+        .rich-text-editor .ql-editor a { color: var(--primary); }
+        .rich-text-editor .ql-editor strong { color: var(--light); }
+        .rich-text-editor .ql-editor em { color: var(--light); }
+        .rich-text-editor .ql-picker {
+            color: var(--gray);
+        }
+        .rich-text-editor .ql-picker-options {
+            background: var(--dark-light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .rich-text-editor .ql-stroke {
+            stroke: var(--gray);
+        }
+        .rich-text-editor .ql-fill {
+            fill: var(--gray);
+        }
+        .rich-text-editor button:hover .ql-stroke,
+        .rich-text-editor button.ql-active .ql-stroke {
+            stroke: var(--primary);
+        }
+        .rich-text-editor button:hover .ql-fill,
+        .rich-text-editor button.ql-active .ql-fill {
+            fill: var(--primary);
+        }
+        
+        /* 小号富文本编辑器（弹窗内使用） */
+        .rich-text-editor-sm {
+            min-height: 140px;
+        }
+        .rich-text-editor-sm .ql-editor {
+            min-height: 90px;
+        }
+        .rich-text-editor-sm .ql-toolbar {
+            padding: 0.4rem 0.6rem;
+        }
+        .rich-text-editor-sm .ql-toolbar button {
+            width: 28px;
+            height: 28px;
+            padding: 4px;
+        }
+        
+        /* 表单分组 */
+        .form-section {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .form-section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .form-section-title i { font-size: 0.85rem; }
+        
+        /* 刷新按钮优化 */
+        .refresh-btn { 
+            background: rgba(99, 102, 241, 0.1); 
+            color: var(--primary); 
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 0.5rem 1rem; 
+            border-radius: 8px; 
+            font-size: 0.85rem; 
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .refresh-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+        }
+        .refresh-btn:active {
+            transform: scale(0.95);
+        }
+        .refresh-btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .refresh-btn.loading i {
+            animation: spin 1s linear infinite;
+        }
+        
+        /* 自定义确认对话框 */
+        .custom-confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .custom-confirm-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-confirm-box {
+            background: var(--dark-light);
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 360px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+        }
+        .custom-confirm-overlay.active .custom-confirm-box {
+            transform: scale(1) translateY(0);
+        }
+        .custom-confirm-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.8rem;
+        }
+        .custom-confirm-icon.warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+        .custom-confirm-icon.danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+        .custom-confirm-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .custom-confirm-message {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .custom-confirm-buttons {
+            display: flex;
+            gap: 0.8rem;
+        }
+        .custom-confirm-buttons button {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        .custom-confirm-btn-cancel {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+        .custom-confirm-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .custom-confirm-btn-confirm {
+            background: var(--danger);
+            color: white;
+        }
+        .custom-confirm-btn-confirm:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+        .custom-confirm-btn-confirm.warning {
+            background: var(--warning);
+        }
+        .custom-confirm-btn-confirm.warning:hover {
+            background: #d97706;
+        }
+
+        /* 成功动画 */
+        .success-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            display: none;
+        }
+        .success-animation.active { display: block; }
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.3s ease;
+        }
+        .success-checkmark i {
+            font-size: 2.5rem;
+            color: white;
+            animation: checkmark 0.3s ease 0.2s both;
+        }
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        @keyframes checkmark {
+            0% { opacity: 0; transform: scale(0); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        /* 按钮加载状态 */
+        .btn { 
+            padding: 0.8rem 1.5rem; 
+            border-radius: 50px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            border: none; 
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .btn.loading {
+            pointer-events: none;
+        }
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .btn-primary { background: var(--gradient); color: white; }
+        .btn-primary:hover { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: var(--light); border: 1px solid rgba(255,255,255,0.1); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.2); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4); }
+        
+        /* 表单行布局 */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        @media (min-width: 500px) {
+            .form-row { grid-template-columns: 1fr 1fr; }
+        }
+        
+        /* Toast 优化 */
+        .toast { 
+            position: fixed; 
+            bottom: 80px; 
+            left: 50%; 
+            transform: translateX(-50%) translateY(20px);
+            padding: 0.8rem 1.5rem; 
+            background: var(--dark-light); 
+            border-radius: 10px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            z-index: 3000; 
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0;
+            animation: toastIn 0.3s ease forwards;
+        }
+        .toast.success { border-color: var(--success); }
+        .toast.success i { color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        .toast.error i { color: var(--danger); }
+        @keyframes toastIn {
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        @media (min-width: 769px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+            .stat-card-value { font-size: 2rem; }
+            .main-content { max-width: 1200px; margin: 0 auto; padding: 80px 2rem 2rem; }
+            .page-title { font-size: 1.6rem; }
+            table { min-width: 600px; }
+            th, td { padding: 1rem 1.2rem; }
+            .bottom-nav-item span { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="loginPage">
+        <div class="login-box">
+            <div class="logo">Choril</div>
+            <h1>管理后台</h1>
+            <form onsubmit="handleAdminLogin(event)">
+                <div class="form-group"><label>管理员账号</label><input type="text" id="adminUsername" placeholder="请输入管理员账号" required autocomplete="username"></div>
+                <div class="form-group"><label>密码</label><input type="password" id="adminPassword" placeholder="请输入密码" required autocomplete="current-password"></div>
+                <div class="form-group"><label>验证码</label><input type="text" id="adminCode" placeholder="请输入管理员验证码" required></div>
+                <button type="submit" class="btn btn-primary">登录管理后台</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="admin-container" id="adminPage">
+        <nav class="top-nav">
+            <div class="logo">Choril Admin</div>
+            <div class="nav-right">
+                <button class="nav-icon-btn" onclick="showHistoryModal()" title="操作历史"><i class="fas fa-history"></i></button>
+                <button class="nav-icon-btn" onclick="adminLogout()" title="退出"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page active" id="dashboardPage">
+                <h1 class="page-title">数据概览</h1>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header"><span class="stat-card-title">总用户</span><div class="stat-card-icon blue"><i class="fas fa-users"></i></div></div>
+                        <div class="stat-card-value" id="statUsers">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header"><span class="stat-card-title">评论数</span><div class="stat-card-icon pink"><i class="fas fa-comments"></i></div></div>
+                        <div class="stat-card-value" id="statComments">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header"><span class="stat-card-title">今日访问</span><div class="stat-card-icon green"><i class="fas fa-eye"></i></div></div>
+                        <div class="stat-card-value" id="statVisits">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header"><span class="stat-card-title">系统状态</span><div class="stat-card-icon orange"><i class="fas fa-server"></i></div></div>
+                        <div class="stat-card-value" style="color: var(--success); font-size: 1.2rem;">正常</div>
+                    </div>
+                </div>
+                <div class="data-card">
+                    <div class="data-card-header"><h2>最新评论</h2></div>
+                    <div class="table-wrap"><table><thead><tr><th>用户</th><th>内容</th><th>时间</th></tr></thead><tbody id="recentComments"></tbody></table></div>
+                </div>
+            </div>
+
+            <div class="page" id="profilePage">
+                <h1 class="page-title">个人主页编辑</h1>
+                
+                <div class="data-card">
+                    <div class="data-card-header"><h2><i class="fas fa-user"></i> 基本信息</h2><button class="refresh-btn" onclick="refreshData('profile', this)"><i class="fas fa-sync-alt"></i> 刷新</button></div>
+                    <div class="modal-body" id="profileForm">
+                        <div class="avatar-upload">
+                            <img id="avatarPreview" class="avatar-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Choril" alt="头像">
+                            <div>
+                                <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="handleAvatarUpload(this)">
+                                <button class="btn btn-secondary" onclick="document.getElementById('avatarInput').click()">上传头像</button>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>姓名</label><input type="text" id="profileName" placeholder="您的姓名"></div>
+                        <div class="form-group"><label>职位/头衔</label><input type="text" id="profileTitle" placeholder="如：全栈开发工程师"></div>
+                        <div class="form-group"><label>个人简介（富文本编辑）</label><div id="profileBioEditor" class="rich-text-editor"></div></div>
+                        <div class="form-group"><label>邮箱</label><input type="email" id="profileEmail" placeholder="your@email.com"></div>
+                        <div class="form-group"><label>电话</label><input type="tel" id="profilePhone" placeholder="手机号码"></div>
+                        <div class="form-group"><label>所在地</label><input type="text" id="profileLocation" placeholder="城市"></div>
+                        <h3 class="section-title">社交链接</h3>
+                        <div class="form-group"><label><i class="fas fa-globe"></i> 个人网站</label><input type="url" id="profileWebsite" placeholder="https://"></div>
+                        <div class="form-group"><label><i class="fab fa-github"></i> GitHub</label><input type="url" id="profileGithub" placeholder="https://github.com/"></div>
+                        <div class="form-group"><label><i class="fab fa-linkedin"></i> LinkedIn</label><input type="url" id="profileLinkedin" placeholder="https://linkedin.com/in/"></div>
+                        <div class="form-group"><label><i class="fab fa-twitter"></i> Twitter</label><input type="url" id="profileTwitter" placeholder="https://twitter.com/"></div>
+                        <div class="form-group"><label><i class="fab fa-weixin"></i> 微信</label><input type="text" id="profileWechat" placeholder="微信号"></div>
+                        <div class="form-group"><label><i class="fab fa-qq"></i> QQ</label><input type="text" id="profileQq" placeholder="QQ号"></div>
+                        <button class="btn btn-primary" onclick="saveProfile()">保存基本信息</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="skillsPage">
+                <h1 class="page-title">技能管理</h1>
+                <div class="data-card">
+                    <div class="data-card-header"><h2><i class="fas fa-code"></i> 技能列表</h2><button class="btn btn-primary btn-sm" onclick="showSkillModal()">+ 添加技能</button></div>
+                    <div id="skillsList" style="padding: 1rem;"></div>
+                </div>
+            </div>
+
+            <div class="page" id="educationPage">
+                <h1 class="page-title">教育背景</h1>
+                <div class="data-card">
+                    <div class="data-card-header"><h2><i class="fas fa-graduation-cap"></i> 教育经历</h2><button class="btn btn-primary btn-sm" onclick="showEducationModal()">+ 添加教育</button></div>
+                    <div id="educationList" style="padding: 1rem;"></div>
+                </div>
+            </div>
+
+            <div class="page" id="experiencePage">
+                <h1 class="page-title">工作经历</h1>
+                <div class="data-card">
+                    <div class="data-card-header"><h2><i class="fas fa-briefcase"></i> 工作经历</h2><button class="btn btn-primary btn-sm" onclick="showExperienceModal()">+ 添加经历</button></div>
+                    <div id="experienceList" style="padding: 1rem;"></div>
+                </div>
+            </div>
+
+            <div class="page" id="projectsPage">
+                <h1 class="page-title">项目管理</h1>
+                <div class="data-card">
+                    <div class="data-card-header"><h2><i class="fas fa-project-diagram"></i> 项目列表</h2><button class="btn btn-primary btn-sm" onclick="showProjectModal()">+ 添加项目</button></div>
+                    <div id="projectsList" style="padding: 1rem;"></div>
+                </div>
+            </div>
+
+            <div class="page" id="visitsPage">
+                <h1 class="page-title">今日访问记录</h1>
+                <div class="data-card">
+                    <div class="data-card-header"><h2>访问日志</h2><button class="refresh-btn" onclick="refreshData('visits', this)"><i class="fas fa-sync-alt"></i> 刷新</button></div>
+                    <div class="table-wrap"><table><thead><tr><th>IP</th><th>路径</th><th>时间</th></tr></thead><tbody id="visitsList"></tbody></table></div>
+                </div>
+            </div>
+
+            <div class="page" id="usersPage">
+                <h1 class="page-title">用户管理</h1>
+                <div class="data-card">
+                    <div class="data-card-header"><h2>用户列表</h2><button class="refresh-btn" onclick="refreshData('users', this)"><i class="fas fa-sync-alt"></i> 刷新</button></div>
+                    <div class="table-wrap"><table><thead><tr><th>用户名</th><th>邮箱</th><th>角色</th><th>操作</th></tr></thead><tbody id="usersList"></tbody></table></div>
+                </div>
+            </div>
+
+            <div class="page" id="commentsPage">
+                <h1 class="page-title">评论管理</h1>
+                <div class="data-card">
+                    <div class="data-card-header"><h2>评论列表</h2><button class="refresh-btn" onclick="refreshData('comments', this)"><i class="fas fa-sync-alt"></i> 刷新</button></div>
+                    <div class="table-wrap"><table><thead><tr><th>用户</th><th>内容</th><th>时间</th><th>操作</th></tr></thead><tbody id="commentsList"></tbody></table></div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <div class="bottom-nav-item active" onclick="showPage('dashboard')"><i class="fas fa-chart-line"></i><span>概览</span></div>
+            <div class="bottom-nav-item" onclick="showPage('profile')"><i class="fas fa-user-edit"></i><span>主页</span></div>
+            <div class="bottom-nav-item" onclick="showPage('skills')"><i class="fas fa-code"></i><span>技能</span></div>
+            <div class="bottom-nav-item" onclick="showPage('education')"><i class="fas fa-graduation-cap"></i><span>教育</span></div>
+            <div class="bottom-nav-item" onclick="showPage('experience')"><i class="fas fa-briefcase"></i><span>经历</span></div>
+            <div class="bottom-nav-item" onclick="showPage('projects')"><i class="fas fa-project-diagram"></i><span>项目</span></div>
+            <div class="bottom-nav-item" onclick="showPage('users')"><i class="fas fa-users"></i><span>用户</span></div>
+        </nav>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-text"><i class="fas fa-spinner fa-spin"></i> 数据加载中...</div>
+    </div>
+    
+    <!-- 顶部加载条 -->
+    <div class="loading-bar" id="loadingBar"></div>
+    
+    <!-- 成功动画 -->
+    <div class="success-animation" id="successAnimation">
+        <div class="success-checkmark"><i class="fas fa-check"></i></div>
+    </div>
+
+    <!-- 自定义确认对话框 -->
+    <div class="custom-confirm-overlay" id="customConfirmOverlay">
+        <div class="custom-confirm-box">
+            <div class="custom-confirm-icon" id="customConfirmIcon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="custom-confirm-title" id="customConfirmTitle">确认操作</div>
+            <div class="custom-confirm-message" id="customConfirmMessage">您确定要执行此操作吗？</div>
+            <div class="custom-confirm-buttons">
+                <button class="custom-confirm-btn-cancel" onclick="closeCustomConfirm()">取消</button>
+                <button class="custom-confirm-btn-confirm" id="customConfirmBtn" onclick="executeCustomConfirm()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="skillModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>技能编辑</h3><button class="modal-close" onclick="closeModal('skillModal')">&times;</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="skillId">
+                <div class="form-group"><label>技能名称</label><input type="text" id="skillName" placeholder="如：JavaScript"></div>
+                <div class="form-group"><label>熟练度 (0-100)</label><input type="range" id="skillLevel" min="0" max="100" value="80" oninput="document.getElementById('skillLevelValue').textContent=this.value"><span id="skillLevelValue">80</span>%</div>
+                <div class="form-group"><label>分类</label><select id="skillCategory"><option value="前端开发">前端开发</option><option value="后端开发">后端开发</option><option value="数据库">数据库</option><option value="运维部署">运维部署</option><option value="工具">工具</option><option value="其他">其他</option></select></div>
+                <div class="form-group"><label>图标 (Font Awesome)</label><input type="text" id="skillIcon" placeholder="如：fab fa-js"></div>
+                <div class="form-group"><label>描述</label><textarea id="skillDescription" placeholder="技能描述..."></textarea></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('skillModal')">取消</button><button class="btn btn-primary" onclick="saveSkill()">保存</button></div>
+        </div>
+    </div>
+
+    <div class="modal" id="educationModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>教育背景</h3><button class="modal-close" onclick="closeModal('educationModal')">&times;</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="educationId">
+                <div class="form-group"><label>学校名称</label><input type="text" id="eduSchool" placeholder="学校名称"></div>
+                <div class="form-group"><label>学位</label><input type="text" id="eduDegree" placeholder="如：本科、硕士"></div>
+                <div class="form-group"><label>专业</label><input type="text" id="eduMajor" placeholder="专业名称"></div>
+                <div class="form-group"><label>开始时间</label><input type="month" id="eduStartDate"></div>
+                <div class="form-group"><label>结束时间</label><input type="month" id="eduEndDate"></div>
+                <div class="form-group"><label>描述（富文本编辑）</label><div id="eduDescriptionEditor" class="rich-text-editor rich-text-editor-sm"></div></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('educationModal')">取消</button><button class="btn btn-primary" onclick="saveEducation()">保存</button></div>
+        </div>
+    </div>
+
+    <div class="modal" id="experienceModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>工作经历</h3><button class="modal-close" onclick="closeModal('experienceModal')">&times;</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="experienceId">
+                <div class="form-group"><label>公司名称</label><input type="text" id="expCompany" placeholder="公司名称"></div>
+                <div class="form-group"><label>职位</label><input type="text" id="expPosition" placeholder="职位名称"></div>
+                <div class="form-group"><label>开始时间</label><input type="month" id="expStartDate"></div>
+                <div class="form-group"><label>结束时间</label><input type="month" id="expEndDate" placeholder="至今可留空"></div>
+                <div class="form-group"><label>工作描述（富文本编辑）</label><div id="expDescriptionEditor" class="rich-text-editor rich-text-editor-sm"></div></div>
+                <div class="form-group"><label>技术栈</label><input type="text" id="expTechnologies" placeholder="用逗号分隔，如：React,Node.js"></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('experienceModal')">取消</button><button class="btn btn-primary" onclick="saveExperience()">保存</button></div>
+        </div>
+    </div>
+
+    <div class="modal" id="projectModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>项目编辑</h3><button class="modal-close" onclick="closeModal('projectModal')">&times;</button></div>
+            <div class="modal-body">
+                <input type="hidden" id="projectId">
+                <div class="form-group"><label>项目名称</label><input type="text" id="projTitle" placeholder="项目名称"></div>
+                <div class="form-group"><label>项目描述（富文本编辑）</label><div id="projDescriptionEditor" class="rich-text-editor rich-text-editor-sm"></div></div>
+                <div class="form-group"><label>项目截图</label>
+                    <div style="display:flex;align-items:center;gap:1rem;">
+                        <img id="projImagePreview" src="" alt="" style="width:80px;height:60px;object-fit:cover;border-radius:8px;display:none;background:rgba(255,255,255,0.1);">
+                        <input type="file" id="projImageInput" accept="image/*" style="display:none" onchange="handleProjectImageUpload(this)">
+                        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('projImageInput').click()">上传图片</button>
+                        <button class="btn btn-secondary btn-sm" onclick="clearProjectImage()" id="clearProjImageBtn" style="display:none;">清除</button>
+                    </div>
+                </div>
+                <div class="form-group"><label>项目链接</label><input type="url" id="projLink" placeholder="https://"></div>
+                <div class="form-group"><label>GitHub</label><input type="url" id="projGithub" placeholder="https://github.com/"></div>
+                <div class="form-group"><label>技术栈</label><input type="text" id="projTechnologies" placeholder="用逗号分隔"></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('projectModal')">取消</button><button class="btn btn-primary" onclick="saveProject()">保存</button></div>
+        </div>
+    </div>
+
+    <div class="modal" id="historyModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header"><h3>操作历史</h3><button class="modal-close" onclick="closeModal('historyModal')">&times;</button></div>
+            <div class="modal-body" id="historyList" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+    <script>
+        // 混合部署：API 请求指向后端域名
+        const API_BASE = window.location.hostname === 'localhost' ? '' : 'https://api.choril.icu';
+        let profileBioQuill = null;
+        let eduDescQuill = null;
+        let expDescQuill = null;
+        let projDescQuill = null;
+        let currentProjectImage = '';
+        
+        function getToken() { return localStorage.getItem('adminToken'); }
+        function setToken(t) { localStorage.setItem('adminToken', t); }
+        function removeToken() { localStorage.removeItem('adminToken'); localStorage.removeItem('adminUser'); }
+        function authHeaders() { return { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' }; }
+
+        function initQuillEditors() {
+            if (!profileBioQuill) {
+                profileBioQuill = new Quill('#profileBioEditor', {
+                    theme: 'snow',
+                    placeholder: '介绍一下自己...',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'color': [] }, { 'background': [] }],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'align': [] }],
+                            ['link'],
+                            ['clean']
+                        ]
+                    }
+                });
+            }
+        }
+
+        function initEduQuill() {
+            if (!eduDescQuill) {
+                eduDescQuill = new Quill('#eduDescriptionEditor', {
+                    theme: 'snow',
+                    placeholder: '主修课程、成就等...',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['clean']
+                        ]
+                    }
+                });
+            }
+        }
+
+        function initExpQuill() {
+            if (!expDescQuill) {
+                expDescQuill = new Quill('#expDescriptionEditor', {
+                    theme: 'snow',
+                    placeholder: '工作内容和成就...',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['clean']
+                        ]
+                    }
+                });
+            }
+        }
+
+        function initProjQuill() {
+            if (!projDescQuill) {
+                projDescQuill = new Quill('#projDescriptionEditor', {
+                    theme: 'snow',
+                    placeholder: '项目介绍...',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['link'],
+                            ['clean']
+                        ]
+                    }
+                });
+            }
+        }
+
+        function checkAdminAuth() {
+            if (getToken() && localStorage.getItem('adminUser')) showAdminPage();
+        }
+
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const data = { username: document.getElementById('adminUsername').value, password: document.getElementById('adminPassword').value, code: document.getElementById('adminCode').value };
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                const json = await res.json();
+                if (res.ok) { setToken(json.token); localStorage.setItem('adminUser', JSON.stringify(json.user)); showAdminPage(); showToast('登录成功！'); }
+                else showToast(json.error || '登录失败', 'error');
+            } catch (err) { showToast('网络错误', 'error'); }
+        }
+
+        function showAdminPage() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('adminPage').classList.add('active');
+            initQuillEditors();
+            loadAll();
+        }
+
+        function loadAll() {
+            showLoading('正在加载数据...');
+            Promise.all([
+                loadStats(),
+                loadProfile(),
+                loadSkills(),
+                loadEducation(),
+                loadExperience(),
+                loadProjects(),
+                loadVisits(),
+                loadUsers(),
+                loadAllComments()
+            ]).then(() => {
+                hideLoading();
+                initFormEnhancements();
+            }).catch(() => {
+                hideLoading();
+            });
+        }
+
+        // 自定义确认对话框
+        let customConfirmCallback = null;
+        
+        function showCustomConfirm(options) {
+            const overlay = document.getElementById('customConfirmOverlay');
+            const icon = document.getElementById('customConfirmIcon');
+            const title = document.getElementById('customConfirmTitle');
+            const message = document.getElementById('customConfirmMessage');
+            const btn = document.getElementById('customConfirmBtn');
+            
+            // 设置内容
+            icon.className = 'custom-confirm-icon ' + (options.type || 'warning');
+            icon.innerHTML = options.icon || '<i class="fas fa-exclamation-triangle"></i>';
+            title.textContent = options.title || '确认操作';
+            message.textContent = options.message || '您确定要执行此操作吗？';
+            btn.textContent = options.confirmText || '确认';
+            btn.className = 'custom-confirm-btn-confirm ' + (options.type || '');
+            
+            // 保存回调
+            customConfirmCallback = options.onConfirm;
+            
+            // 显示对话框
+            overlay.classList.add('active');
+        }
+        
+        function closeCustomConfirm() {
+            const overlay = document.getElementById('customConfirmOverlay');
+            overlay.classList.remove('active');
+            customConfirmCallback = null;
+        }
+        
+        function executeCustomConfirm() {
+            if (customConfirmCallback) {
+                customConfirmCallback();
+            }
+            closeCustomConfirm();
+        }
+        
+        // 点击遮罩关闭
+        document.getElementById('customConfirmOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeCustomConfirm();
+        });
+
+        function adminLogout() {
+            showCustomConfirm({
+                title: '退出登录',
+                message: '确定要退出管理后台吗？',
+                type: 'warning',
+                icon: '<i class="fas fa-sign-out-alt"></i>',
+                confirmText: '退出',
+                onConfirm: () => {
+                    removeToken();
+                    document.getElementById('adminPage').classList.remove('active');
+                    document.getElementById('loginPage').style.display = 'flex';
+                    showToast('已退出');
+                }
+            });
+        }
+
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.bottom-nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(page + 'Page').classList.add('active');
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+        }
+
+        function showToast(msg, type = 'success') {
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${msg}`;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+        
+        function showLoading(text = '数据加载中...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const loadingText = overlay.querySelector('.loading-text');
+            loadingText.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${text}`;
+            overlay.classList.add('active');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+        
+        function showLoadingBar() {
+            document.getElementById('loadingBar').classList.add('active');
+        }
+        
+        function hideLoadingBar() {
+            document.getElementById('loadingBar').classList.remove('active');
+        }
+        
+        function showSuccessAnimation() {
+            const el = document.getElementById('successAnimation');
+            el.classList.add('active');
+            setTimeout(() => el.classList.remove('active'), 1500);
+        }
+        
+        function setButtonLoading(btn, loading) {
+            if (loading) {
+                btn.classList.add('loading');
+                btn.disabled = true;
+            } else {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+        
+        function setRefreshLoading(btn, loading) {
+            if (loading) {
+                btn.classList.add('loading');
+            } else {
+                btn.classList.remove('loading');
+            }
+        }
+        
+        function autoResizeTextarea(el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+        }
+        
+        function validateField(input, rules = {}) {
+            const value = input.value.trim();
+            const parent = input.parentElement;
+            let errorMsg = null;
+            
+            if (rules.required && !value) {
+                errorMsg = '此字段为必填项';
+            } else if (rules.minLength && value.length < rules.minLength) {
+                errorMsg = `最少需要 ${rules.minLength} 个字符`;
+            } else if (rules.maxLength && value.length > rules.maxLength) {
+                errorMsg = `最多允许 ${rules.maxLength} 个字符`;
+            } else if (rules.pattern && !rules.pattern.test(value)) {
+                errorMsg = rules.patternMsg || '格式不正确';
+            }
+            
+            input.classList.remove('error', 'success');
+            const existingError = parent.querySelector('.error-message');
+            if (existingError) existingError.remove();
+            
+            if (errorMsg) {
+                input.classList.add('error');
+                const errorEl = document.createElement('div');
+                errorEl.className = 'error-message';
+                errorEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${errorMsg}`;
+                parent.appendChild(errorEl);
+                return false;
+            } else if (value) {
+                input.classList.add('success');
+            }
+            return true;
+        }
+        
+        function addCharCounter(textarea, maxLength = 500) {
+            const parent = textarea.parentElement;
+            const counter = document.createElement('div');
+            counter.className = 'char-counter';
+            counter.textContent = `0 / ${maxLength}`;
+            parent.style.position = 'relative';
+            parent.appendChild(counter);
+            
+            textarea.addEventListener('input', () => {
+                const len = textarea.value.length;
+                counter.textContent = `${len} / ${maxLength}`;
+                counter.classList.remove('warning', 'error');
+                if (len > maxLength * 0.9) counter.classList.add('warning');
+                if (len > maxLength) counter.classList.add('error');
+                autoResizeTextarea(textarea);
+            });
+        }
+        
+        function initFormEnhancements() {
+            document.querySelectorAll('textarea').forEach(ta => {
+                ta.addEventListener('input', () => autoResizeTextarea(ta));
+                ta.addEventListener('focus', () => autoResizeTextarea(ta));
+            });
+            
+            document.querySelectorAll('input[required], textarea[required], select[required]').forEach(input => {
+                input.addEventListener('blur', () => validateField(input, { required: true }));
+                input.addEventListener('input', () => {
+                    input.classList.remove('error');
+                    const error = input.parentElement.querySelector('.error-message');
+                    if (error) error.remove();
+                });
+            });
+        }
+        
+        async function refreshData(type, btn) {
+            setRefreshLoading(btn, true);
+            try {
+                switch(type) {
+                    case 'profile': await loadProfile(); break;
+                    case 'visits': await loadVisits(); break;
+                    case 'users': await loadUsers(); break;
+                    case 'comments': await loadAllComments(); break;
+                }
+                showToast('刷新成功');
+            } catch (err) {
+                showToast('刷新失败', 'error');
+            }
+            setRefreshLoading(btn, false);
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/stats`, { headers: authHeaders() });
+                const data = await res.json();
+                document.getElementById('statUsers').textContent = data.users || 0;
+                document.getElementById('statComments').textContent = data.comments || 0;
+                document.getElementById('statVisits').textContent = data.visits || 0;
+            } catch (err) { console.error(err); }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/comments`);
+                const comments = await res.json();
+                const recent = comments.slice(0, 5);
+                document.getElementById('recentComments').innerHTML = recent.length ? recent.map(c => `<tr><td>${c.username||'匿名'}</td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis">${c.content}</td><td>${new Date(c.created_at).toLocaleDateString()}</td></tr>`).join('') : '<tr><td colspan="3" class="empty-state">暂无评论</td></tr>';
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadProfile() {
+            try {
+                const res = await fetch(`${API_BASE}/api/profile`);
+                const p = await res.json();
+                if (p) {
+                    document.getElementById('profileName').value = p.name || '';
+                    document.getElementById('profileTitle').value = p.title || '';
+                    if (profileBioQuill) {
+                        profileBioQuill.root.innerHTML = p.bio || '';
+                    }
+                    document.getElementById('profileEmail').value = p.email || '';
+                    document.getElementById('profilePhone').value = p.phone || '';
+                    document.getElementById('profileLocation').value = p.location || '';
+                    document.getElementById('profileWebsite').value = p.website || '';
+                    document.getElementById('profileGithub').value = p.github || '';
+                    document.getElementById('profileLinkedin').value = p.linkedin || '';
+                    document.getElementById('profileTwitter').value = p.twitter || '';
+                    document.getElementById('profileWechat').value = p.wechat || '';
+                    document.getElementById('profileQq').value = p.qq || '';
+                    if (p.avatar) document.getElementById('avatarPreview').src = p.avatar;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function handleAvatarUpload(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/admin/upload`, {
+                            method: 'POST',
+                            headers: authHeaders(),
+                            body: JSON.stringify({ image: e.target.result, filename: file.name })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            document.getElementById('avatarPreview').src = data.url;
+                            showToast('头像上传成功');
+                        } else {
+                            showToast(data.error || '上传失败', 'error');
+                        }
+                    } catch (err) {
+                        showToast('上传失败', 'error');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function saveProfile() {
+            const btn = event.target;
+            setButtonLoading(btn, true);
+            const data = {
+                name: document.getElementById('profileName').value,
+                title: document.getElementById('profileTitle').value,
+                bio: profileBioQuill ? profileBioQuill.root.innerHTML : '',
+                avatar: document.getElementById('avatarPreview').src,
+                email: document.getElementById('profileEmail').value,
+                phone: document.getElementById('profilePhone').value,
+                location: document.getElementById('profileLocation').value,
+                website: document.getElementById('profileWebsite').value,
+                github: document.getElementById('profileGithub').value,
+                linkedin: document.getElementById('profileLinkedin').value,
+                twitter: document.getElementById('profileTwitter').value,
+                wechat: document.getElementById('profileWechat').value,
+                qq: document.getElementById('profileQq').value
+            };
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/profile`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) });
+                if (res.ok) {
+                    showSuccessAnimation();
+                } else { 
+                    const d = await res.json(); 
+                    showToast(d.error || '保存失败', 'error'); 
+                }
+            } catch (err) { showToast('网络错误', 'error'); }
+            setButtonLoading(btn, false);
+        }
+
+        async function loadSkills() {
+            try {
+                const res = await fetch(`${API_BASE}/api/skills`);
+                const skills = await res.json();
+                const container = document.getElementById('skillsList');
+                container.innerHTML = skills.length ? skills.map(s => `
+                    <div class="edit-item draggable" data-id="${s.id}" draggable="true">
+                        <div class="edit-item-header">
+                            <div><i class="fas fa-grip-vertical drag-handle"></i><span class="edit-item-title"><i class="${s.icon || 'fas fa-code'}"></i> ${s.name}</span></div>
+                            <div class="edit-item-actions">
+                                <button class="btn-icon btn-secondary" onclick="editSkill(${s.id})"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon btn-danger" onclick="deleteSkill(${s.id})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="edit-item-content">${s.category} | ${s.description || ''}</div>
+                        <div class="skill-bar"><div class="skill-bar-fill" style="width: ${s.level}%"></div></div>
+                    </div>
+                `).join('') : '<div class="empty-state">暂无技能</div>';
+                initDragAndDrop('skillsList', 'skills');
+            } catch (err) { console.error(err); }
+        }
+
+        function showSkillModal(id = null) {
+            document.getElementById('skillId').value = id || '';
+            if (id) {
+                fetch(`${API_BASE}/api/skills`).then(r => r.json()).then(skills => {
+                    const s = skills.find(x => x.id === id);
+                    if (s) {
+                        document.getElementById('skillName').value = s.name;
+                        document.getElementById('skillLevel').value = s.level;
+                        document.getElementById('skillLevelValue').textContent = s.level;
+                        document.getElementById('skillCategory').value = s.category;
+                        document.getElementById('skillIcon').value = s.icon || '';
+                        document.getElementById('skillDescription').value = s.description || '';
+                    }
+                });
+            } else {
+                document.getElementById('skillName').value = '';
+                document.getElementById('skillLevel').value = 80;
+                document.getElementById('skillLevelValue').textContent = 80;
+                document.getElementById('skillCategory').value = '前端开发';
+                document.getElementById('skillIcon').value = '';
+                document.getElementById('skillDescription').value = '';
+            }
+            openModal('skillModal');
+        }
+
+        function editSkill(id) { showSkillModal(id); }
+
+        async function saveSkill() {
+            const btn = event.target;
+            setButtonLoading(btn, true);
+            const id = document.getElementById('skillId').value;
+            const data = {
+                name: document.getElementById('skillName').value,
+                level: parseInt(document.getElementById('skillLevel').value),
+                category: document.getElementById('skillCategory').value,
+                icon: document.getElementById('skillIcon').value,
+                description: document.getElementById('skillDescription').value
+            };
+            try {
+                const url = id ? `${API_BASE}/api/admin/skills/${id}` : `${API_BASE}/api/admin/skills`;
+                const method = id ? 'PUT' : 'POST';
+                const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(data) });
+                if (res.ok) { 
+                    closeModal('skillModal'); 
+                    loadSkills(); 
+                    showSuccessAnimation();
+                }
+                else { const d = await res.json(); showToast(d.error || '保存失败', 'error'); }
+            } catch (err) { showToast('网络错误', 'error'); }
+            setButtonLoading(btn, false);
+        }
+
+        async function deleteSkill(id) {
+            showCustomConfirm({
+                title: '删除技能',
+                message: '确定要删除这个技能吗？此操作不可撤销。',
+                type: 'danger',
+                icon: '<i class="fas fa-trash-alt"></i>',
+                confirmText: '删除',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/admin/skills/${id}`, { method: 'DELETE', headers: authHeaders() });
+                        if (res.ok) { loadSkills(); showToast('已删除'); }
+                        else { const d = await res.json(); showToast(d.error || '删除失败', 'error'); }
+                    } catch (err) { showToast('网络错误', 'error'); }
+                }
+            });
+        }
+
+        async function loadEducation() {
+            try {
+                const res = await fetch(`${API_BASE}/api/education`);
+                const items = await res.json();
+                const container = document.getElementById('educationList');
+                container.innerHTML = items.length ? items.map(e => `
+                    <div class="edit-item draggable" data-id="${e.id}" draggable="true">
+                        <div class="edit-item-header">
+                            <div><i class="fas fa-grip-vertical drag-handle"></i><span class="edit-item-title">${e.school}</span></div>
+                            <div class="edit-item-actions">
+                                <button class="btn-icon btn-secondary" onclick="editEducation(${e.id})"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon btn-danger" onclick="deleteEducation(${e.id})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="edit-item-content">${e.degree} | ${e.major} | ${e.start_date} ~ ${e.end_date}</div>
+                        <div class="edit-item-content">${e.description || ''}</div>
+                    </div>
+                `).join('') : '<div class="empty-state">暂无教育背景</div>';
+                initDragAndDrop('educationList', 'education');
+            } catch (err) { console.error(err); }
+        }
+
+        function showEducationModal(id = null) {
+            document.getElementById('educationId').value = id || '';
+            initEduQuill();
+            if (id) {
+                fetch(`${API_BASE}/api/education`).then(r => r.json()).then(items => {
+                    const e = items.find(x => x.id === id);
+                    if (e) {
+                        document.getElementById('eduSchool').value = e.school;
+                        document.getElementById('eduDegree').value = e.degree || '';
+                        document.getElementById('eduMajor').value = e.major || '';
+                        document.getElementById('eduStartDate').value = e.start_date || '';
+                        document.getElementById('eduEndDate').value = e.end_date || '';
+                        if (eduDescQuill) eduDescQuill.root.innerHTML = e.description || '';
+                    }
+                });
+            } else {
+                document.getElementById('eduSchool').value = '';
+                document.getElementById('eduDegree').value = '';
+                document.getElementById('eduMajor').value = '';
+                document.getElementById('eduStartDate').value = '';
+                document.getElementById('eduEndDate').value = '';
+                if (eduDescQuill) eduDescQuill.setText('');
+            }
+            openModal('educationModal');
+        }
+
+        function editEducation(id) { showEducationModal(id); }
+
+        async function saveEducation() {
+            const btn = event.target;
+            setButtonLoading(btn, true);
+            const id = document.getElementById('educationId').value;
+            const data = {
+                school: document.getElementById('eduSchool').value,
+                degree: document.getElementById('eduDegree').value,
+                major: document.getElementById('eduMajor').value,
+                start_date: document.getElementById('eduStartDate').value,
+                end_date: document.getElementById('eduEndDate').value,
+                description: eduDescQuill ? eduDescQuill.root.innerHTML : ''
+            };
+            try {
+                const url = id ? `${API_BASE}/api/admin/education/${id}` : `${API_BASE}/api/admin/education`;
+                const method = id ? 'PUT' : 'POST';
+                const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(data) });
+                if (res.ok) { 
+                    closeModal('educationModal'); 
+                    loadEducation(); 
+                    showSuccessAnimation();
+                }
+                else { const d = await res.json(); showToast(d.error || '保存失败', 'error'); }
+            } catch (err) { showToast('网络错误', 'error'); }
+            setButtonLoading(btn, false);
+        }
+
+        async function deleteEducation(id) {
+            showCustomConfirm({
+                title: '删除教育背景',
+                message: '确定要删除这条教育背景记录吗？此操作不可撤销。',
+                type: 'danger',
+                icon: '<i class="fas fa-trash-alt"></i>',
+                confirmText: '删除',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/admin/education/${id}`, { method: 'DELETE', headers: authHeaders() });
+                        if (res.ok) { loadEducation(); showToast('已删除'); }
+                        else { const d = await res.json(); showToast(d.error || '删除失败', 'error'); }
+                    } catch (err) { showToast('网络错误', 'error'); }
+                }
+            });
+        }
+
+        async function loadExperience() {
+            try {
+                const res = await fetch(`${API_BASE}/api/experience`);
+                const items = await res.json();
+                const container = document.getElementById('experienceList');
+                container.innerHTML = items.length ? items.map(e => `
+                    <div class="edit-item draggable" data-id="${e.id}" draggable="true">
+                        <div class="edit-item-header">
+                            <div><i class="fas fa-grip-vertical drag-handle"></i><span class="edit-item-title">${e.company}</span></div>
+                            <div class="edit-item-actions">
+                                <button class="btn-icon btn-secondary" onclick="editExperience(${e.id})"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon btn-danger" onclick="deleteExperience(${e.id})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="edit-item-content">${e.position} | ${e.start_date} ~ ${e.end_date || '至今'}</div>
+                        <div class="edit-item-content">${e.description || ''}</div>
+                        <div class="edit-item-content"><small>技术栈: ${e.technologies || '-'}</small></div>
+                    </div>
+                `).join('') : '<div class="empty-state">暂无工作经历</div>';
+                initDragAndDrop('experienceList', 'experience');
+            } catch (err) { console.error(err); }
+        }
+
+        function showExperienceModal(id = null) {
+            document.getElementById('experienceId').value = id || '';
+            initExpQuill();
+            if (id) {
+                fetch(`${API_BASE}/api/experience`).then(r => r.json()).then(items => {
+                    const e = items.find(x => x.id === id);
+                    if (e) {
+                        document.getElementById('expCompany').value = e.company;
+                        document.getElementById('expPosition').value = e.position || '';
+                        document.getElementById('expStartDate').value = e.start_date || '';
+                        document.getElementById('expEndDate').value = e.end_date || '';
+                        if (expDescQuill) expDescQuill.root.innerHTML = e.description || '';
+                        document.getElementById('expTechnologies').value = e.technologies || '';
+                    }
+                });
+            } else {
+                document.getElementById('expCompany').value = '';
+                document.getElementById('expPosition').value = '';
+                document.getElementById('expStartDate').value = '';
+                document.getElementById('expEndDate').value = '';
+                if (expDescQuill) expDescQuill.setText('');
+                document.getElementById('expTechnologies').value = '';
+            }
+            openModal('experienceModal');
+        }
+
+        function editExperience(id) { showExperienceModal(id); }
+
+        async function saveExperience() {
+            const btn = event.target;
+            setButtonLoading(btn, true);
+            const id = document.getElementById('experienceId').value;
+            const data = {
+                company: document.getElementById('expCompany').value,
+                position: document.getElementById('expPosition').value,
+                start_date: document.getElementById('expStartDate').value,
+                end_date: document.getElementById('expEndDate').value,
+                description: expDescQuill ? expDescQuill.root.innerHTML : '',
+                technologies: document.getElementById('expTechnologies').value
+            };
+            try {
+                const url = id ? `${API_BASE}/api/admin/experience/${id}` : `${API_BASE}/api/admin/experience`;
+                const method = id ? 'PUT' : 'POST';
+                const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(data) });
+                if (res.ok) { 
+                    closeModal('experienceModal'); 
+                    loadExperience(); 
+                    showSuccessAnimation();
+                }
+                else { const d = await res.json(); showToast(d.error || '保存失败', 'error'); }
+            } catch (err) { showToast('网络错误', 'error'); }
+            setButtonLoading(btn, false);
+        }
+
+        async function deleteExperience(id) {
+            showCustomConfirm({
+                title: '删除工作经历',
+                message: '确定要删除这条工作经历记录吗？此操作不可撤销。',
+                type: 'danger',
+                icon: '<i class="fas fa-trash-alt"></i>',
+                confirmText: '删除',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/admin/experience/${id}`, { method: 'DELETE', headers: authHeaders() });
+                        if (res.ok) { loadExperience(); showToast('已删除'); }
+                        else { const d = await res.json(); showToast(d.error || '删除失败', 'error'); }
+                    } catch (err) { showToast('网络错误', 'error'); }
+                }
+            });
+        }
+
+        async function loadProjects() {
+            try {
+                const res = await fetch(`${API_BASE}/api/projects`);
+                const items = await res.json();
+                const container = document.getElementById('projectsList');
+                container.innerHTML = items.length ? items.map(p => `
+                    <div class="edit-item draggable" data-id="${p.id}" draggable="true">
+                        <div class="edit-item-header">
+                            <div><i class="fas fa-grip-vertical drag-handle"></i><span class="edit-item-title">${p.title}</span></div>
+                            <div class="edit-item-actions">
+                                <button class="btn-icon btn-secondary" onclick="editProject(${p.id})"><i class="fas fa-edit"></i></button>
+                                <button class="btn-icon btn-danger" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="edit-item-content">${p.description || ''}</div>
+                        <div class="edit-item-content"><small>技术栈: ${p.technologies || '-'}</small></div>
+                    </div>
+                `).join('') : '<div class="empty-state">暂无项目</div>';
+                initDragAndDrop('projectsList', 'projects');
+            } catch (err) { console.error(err); }
+        }
+
+        function showProjectModal(id = null) {
+            document.getElementById('projectId').value = id || '';
+            initProjQuill();
+            currentProjectImage = '';
+            if (id) {
+                fetch(`${API_BASE}/api/projects`).then(r => r.json()).then(items => {
+                    const p = items.find(x => x.id === id);
+                    if (p) {
+                        document.getElementById('projTitle').value = p.title;
+                        if (projDescQuill) projDescQuill.root.innerHTML = p.description || '';
+                        document.getElementById('projLink').value = p.link || '';
+                        document.getElementById('projGithub').value = p.github || '';
+                        document.getElementById('projTechnologies').value = p.technologies || '';
+                        if (p.image) {
+                            currentProjectImage = p.image;
+                            document.getElementById('projImagePreview').src = p.image;
+                            document.getElementById('projImagePreview').style.display = 'block';
+                            document.getElementById('clearProjImageBtn').style.display = 'inline-block';
+                        } else {
+                            document.getElementById('projImagePreview').style.display = 'none';
+                            document.getElementById('clearProjImageBtn').style.display = 'none';
+                        }
+                    }
+                });
+            } else {
+                document.getElementById('projTitle').value = '';
+                if (projDescQuill) projDescQuill.setText('');
+                document.getElementById('projLink').value = '';
+                document.getElementById('projGithub').value = '';
+                document.getElementById('projTechnologies').value = '';
+                document.getElementById('projImagePreview').style.display = 'none';
+                document.getElementById('clearProjImageBtn').style.display = 'none';
+            }
+            openModal('projectModal');
+        }
+
+        function editProject(id) { showProjectModal(id); }
+
+        async function handleProjectImageUpload(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/admin/upload`, {
+                            method: 'POST',
+                            headers: authHeaders(),
+                            body: JSON.stringify({ image: e.target.result, filename: file.name })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            currentProjectImage = data.url;
+                            document.getElementById('projImagePreview').src = data.url;
+                            document.getElementById('projImagePreview').style.display = 'block';
+                            document.getElementById('clearProjImageBtn').style.display = 'inline-block';
+                            showToast('图片上传成功');
+                        } else {
+                            showToast(data.error || '上传失败', 'error');
+                        }
+                    } catch (err) {
+                        showToast('上传失败', 'error');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearProjectImage() {
+            currentProjectImage = '';
+            document.getElementById('projImagePreview').style.display = 'none';
+            document.getElementById('clearProjImageBtn').style.display = 'none';
+        }
+
+        async function saveProject() {
+            const btn = event.target;
+            setButtonLoading(btn, true);
+            const id = document.getElementById('projectId').value;
+            const data = {
+                title: document.getElementById('projTitle').value,
+                description: projDescQuill ? projDescQuill.root.innerHTML : '',
+                image: currentProjectImage,
+                link: document.getElementById('projLink').value,
+                github: document.getElementById('projGithub').value,
+                technologies: document.getElementById('projTechnologies').value
+            };
+            try {
+                const url = id ? `${API_BASE}/api/admin/projects/${id}` : `${API_BASE}/api/admin/projects`;
+                const method = id ? 'PUT' : 'POST';
+                const res = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify(data) });
+                if (res.ok) { 
+                    closeModal('projectModal'); 
+                    loadProjects(); 
+                    showSuccessAnimation();
+                }
+                else { const d = await res.json(); showToast(d.error || '保存失败', 'error'); }
+            } catch (err) { showToast('网络错误', 'error'); }
+            setButtonLoading(btn, false);
+        }
+
+        async function deleteProject(id) {
+            showCustomConfirm({
+                title: '删除项目',
+                message: '确定要删除这个项目吗？此操作不可撤销。',
+                type: 'danger',
+                icon: '<i class="fas fa-trash-alt"></i>',
+                confirmText: '删除',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/admin/projects/${id}`, { method: 'DELETE', headers: authHeaders() });
+                        if (res.ok) { loadProjects(); showToast('已删除'); }
+                        else { const d = await res.json(); showToast(d.error || '删除失败', 'error'); }
+                    } catch (err) { showToast('网络错误', 'error'); }
+                }
+            });
+        }
+
+        function initDragAndDrop(containerId, type) {
+            const container = document.getElementById(containerId);
+            const items = container.querySelectorAll('.draggable');
+            items.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+            });
+        }
+
+        let draggedItem = null;
+        function handleDragStart(e) { draggedItem = this; this.classList.add('dragging'); }
+        function handleDragEnd(e) { this.classList.remove('dragging'); draggedItem = null; }
+        function handleDragOver(e) { e.preventDefault(); }
+        function handleDrop(e) {
+            e.preventDefault();
+            if (draggedItem !== this) {
+                const container = this.parentNode;
+                const items = [...container.querySelectorAll('.draggable')];
+                const fromIndex = items.indexOf(draggedItem);
+                const toIndex = items.indexOf(this);
+                if (fromIndex < toIndex) container.insertBefore(draggedItem, this.nextSibling);
+                else container.insertBefore(draggedItem, this);
+                saveReorder(container, this.dataset.type || containerId.replace('List', ''));
+            }
+        }
+
+        async function saveReorder(container, type) {
+            const items = container.querySelectorAll('.draggable');
+            const orders = [...items].map((item, index) => ({ id: parseInt(item.dataset.id), display_order: index }));
+            try {
+                await fetch(`${API_BASE}/api/admin/${type}/reorder`, {
+                    method: 'PUT',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ orders })
+                });
+            } catch (err) { console.error('排序保存失败', err); }
+        }
+
+        async function showHistoryModal() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/history?limit=30`, { headers: authHeaders() });
+                const history = await res.json();
+                const container = document.getElementById('historyList');
+                container.innerHTML = history.length ? history.map(h => `
+                    <div class="history-item">
+                        <span class="history-action ${h.action}">${h.action}</span>
+                        <strong>${h.table_name}</strong>
+                        <small style="float:right">${new Date(h.created_at).toLocaleString()}</small>
+                        <div><small>操作人: ${h.admin_name || '未知'}</small></div>
+                        ${h.action !== 'DELETE' ? `<button class="btn-sm btn-secondary" onclick="undoAction(${h.id})">撤销</button>` : ''}
+                    </div>
+                `).join('') : '<div class="empty-state">暂无操作历史</div>';
+                openModal('historyModal');
+            } catch (err) { showToast('获取历史失败', 'error'); }
+        }
+
+        async function undoAction(historyId) {
+            showCustomConfirm({
+                title: '撤销操作',
+                message: '确定要撤销这条操作记录吗？这将恢复到操作前的状态。',
+                type: 'warning',
+                icon: '<i class="fas fa-undo"></i>',
+                confirmText: '撤销',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/admin/undo`, {
+                            method: 'POST',
+                            headers: authHeaders(),
+                            body: JSON.stringify({ history_id: historyId })
+                        });
+                        if (res.ok) {
+                            closeModal('historyModal');
+                            loadAll();
+                            showToast('撤销成功');
+                        } else {
+                            const d = await res.json();
+                            showToast(d.error || '撤销失败', 'error');
+                        }
+                    } catch (err) { showToast('网络错误', 'error'); }
+                }
+            });
+        }
+
+        async function loadVisits() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/visits`, { headers: authHeaders() });
+                const visits = await res.json();
+                document.getElementById('visitsList').innerHTML = visits.length ? visits.map(v => `<tr><td>${v.ip||'-'}</td><td>${v.path}</td><td>${new Date(v.created_at).toLocaleTimeString()}</td></tr>`).join('') : '<tr><td colspan="3" class="empty-state">暂无访问记录</td></tr>';
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/users`, { headers: authHeaders() });
+                const users = await res.json();
+                document.getElementById('usersList').innerHTML = users.length ? users.map(u => `<tr><td>${u.username}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis">${u.email}</td><td><span class="badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.role==='admin'?'管理员':'用户'}</span></td><td>${u.role!=='admin'?`<button class="btn-sm btn-danger" onclick="deleteUser(${u.id})">删除</button>`:'-'}</td></tr>`).join('') : '<tr><td colspan="4" class="empty-state">暂无用户</td></tr>';
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteUser(id) {
+            showCustomConfirm({
+                title: '删除用户',
+                message: '确定要删除这个用户吗？此操作不可撤销。',
+                type: 'danger',
+                icon: '<i class="fas fa-user-times"></i>',
+                confirmText: '删除',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/admin/users/${id}`, { method: 'DELETE', headers: authHeaders() });
+                        if (res.ok) { loadUsers(); loadStats(); showToast('已删除'); }
+                        else { const d = await res.json(); showToast(d.error||'失败', 'error'); }
+                    } catch (err) { showToast('网络错误', 'error'); }
+                }
+            });
+        }
+
+        async function loadAllComments() {
+            try {
+                const res = await fetch(`${API_BASE}/api/comments`);
+                const comments = await res.json();
+                document.getElementById('commentsList').innerHTML = comments.length ? comments.map(c => `<tr><td>${c.username||'匿名'}</td><td style="max-width:150px;overflow:hidden;text-overflow:ellipsis">${c.content}</td><td>${new Date(c.created_at).toLocaleDateString()}</td><td><button class="btn-sm btn-danger" onclick="deleteComment(${c.id})">删除</button></td></tr>`).join('') : '<tr><td colspan="4" class="empty-state">暂无评论</td></tr>';
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteComment(id) {
+            showCustomConfirm({
+                title: '删除评论',
+                message: '确定要删除这条评论吗？此操作不可撤销。',
+                type: 'danger',
+                icon: '<i class="fas fa-comment-slash"></i>',
+                confirmText: '删除',
+                onConfirm: async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/admin/comments/${id}`, { method: 'DELETE', headers: authHeaders() });
+                        if (res.ok) { loadAllComments(); loadStats(); showToast('已删除'); }
+                        else { const d = await res.json(); showToast(d.error||'失败', 'error'); }
+                    } catch (err) { showToast('网络错误', 'error'); }
+                }
+            });
+        }
+
+        checkAdminAuth();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choril - 个人主页</title>
+    <!-- DNS 预连接 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <!-- 外部样式 - 使用轻量等宽字体替代大字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 代码块使用 JetBrains Mono (~200KB) 替代 Fusion 像素字体 (5.5MB) */
+            font-display: swap;
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --gradient: linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #06b6d4 100%);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 页面加载遮罩 */
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .page-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .page-loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(99, 102, 241, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 动态背景 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 40%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                var(--dark);
+        }
+
+        .floating-shapes {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.5;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .shape:nth-child(1) {
+            width: 400px;
+            height: 400px;
+            background: var(--primary);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            background: var(--secondary);
+            bottom: -50px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+
+        .shape:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            background: var(--accent);
+            top: 50%;
+            left: 50%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(50px, 50px) rotate(90deg); }
+            50% { transform: translate(0, 100px) rotate(180deg); }
+            75% { transform: translate(-50px, 50px) rotate(270deg); }
+        }
+
+        /* 导航栏 */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            background: rgba(15, 23, 42, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: var(--light);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        /* 主内容 */
+        main {
+            padding-top: 100px;
+        }
+
+        /* Hero 区域 */
+        .hero {
+            min-height: calc(100vh - 100px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+
+        .avatar {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: 700;
+            color: white;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+        }
+
+        .avatar-ring {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: var(--primary);
+            border-right-color: var(--secondary);
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero h1 span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .subtitle {
+            font-size: 1.3rem;
+            color: var(--gray);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .social-links a {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--light);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .social-links a:hover {
+            background: var(--gradient);
+            transform: translateY(-5px);
+            border-color: transparent;
+        }
+
+        /* 内容区域 */
+        .section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title h2 span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-title p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+
+        /* 关于我 */
+        .about-bio {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 2rem;
+            line-height: 2;
+            color: var(--light);
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        .about-bio:empty {
+            display: none;
+        }
+        .about-bio p {
+            margin-bottom: 1rem;
+        }
+        .about-bio ul, .about-bio ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .about-bio li {
+            margin-bottom: 0.5rem;
+        }
+        .about-bio strong {
+            color: var(--primary);
+        }
+        .about-bio a {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+        
+        /* 打字光标 */
+        .typing-cursor {
+            display: inline-block;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 300;
+            font-size: 1.1em;
+            animation: blink 0.8s ease-in-out infinite;
+            margin-left: 3px;
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+            transform: translateY(1px);
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; transform: translateY(1px) scale(1); }
+            50% { opacity: 0.3; transform: translateY(1px) scale(0.95); }
+        }
+        
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .about-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .about-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.1);
+        }
+
+        .about-card i {
+            font-size: 2.5rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .about-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .about-card p {
+            color: var(--gray);
+            line-height: 1.6;
+        }
+
+        /* 技能区域 */
+        .skills-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .skill-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .skill-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .skill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .skill-name {
+            font-weight: 600;
+        }
+
+        .skill-percent {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .skill-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .skill-progress {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        /* 项目区域 */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.1);
+        }
+
+        .project-image {
+            height: 200px;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .project-content {
+            padding: 1.5rem;
+        }
+
+        .project-content h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-content p {
+            color: var(--gray);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .project-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 0.3rem 0.8rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--primary);
+        }
+
+        /* 评论区域 */
+        .comments-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* 时间线样式 */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--gradient);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateX(5px);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.5rem;
+            top: 1.8rem;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            border: 3px solid var(--dark);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .timeline-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .timeline-subtitle {
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .timeline-date {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .timeline-content {
+            color: var(--light);
+            line-height: 1.6;
+            margin-top: 0.5rem;
+        }
+
+        .timeline-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.8rem;
+        }
+
+        .comment-form {
+            margin-bottom: 2rem;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+
+        .comment-form textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .comment {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .comment-time {
+            color: var(--gray);
+            font-size: 0.85rem;
+        }
+
+        .comment-content {
+            color: var(--light);
+            line-height: 1.6;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--dark-light);
+            border-radius: 25px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--light);
+        }
+
+        .modal h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .modal h2 span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal p {
+            color: var(--gray);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: var(--gray);
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 1rem;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .divider span {
+            padding: 0 1rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .switch-form {
+            text-align: center;
+            color: var(--gray);
+        }
+
+        .switch-form a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--gray);
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .section {
+                padding: 3rem 1rem;
+            }
+
+            .section-title h2 {
+                font-size: 2rem;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Toast 提示 */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background: var(--dark-light);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 3000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            border-color: #10b981;
+        }
+
+        .toast.error {
+            border-color: #ef4444;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* 用户菜单 */
+        .user-menu {
+            position: relative;
+        }
+
+        .user-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .user-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: var(--dark-light);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            min-width: 150px;
+            display: none;
+        }
+
+        .dropdown.active {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 0.8rem 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .dropdown-item.logout {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面加载遮罩 -->
+    <div class="page-loader" id="pageLoader">
+        <div class="page-loader-spinner"></div>
+    </div>
+    
+    <div class="bg-animation"></div>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav>
+        <div class="logo">Choril</div>
+        <div class="nav-links">
+            <a href="#about">关于</a>
+            <a href="#skills">技能</a>
+            <a href="#education">教育</a>
+            <a href="#experience">经历</a>
+            <a href="#projects">项目</a>
+            <a href="#comments">留言</a>
+            <div id="authButtons">
+                <button class="btn btn-outline" onclick="openModal('login')">登录</button>
+                <button class="btn btn-primary" onclick="openModal('register')">注册</button>
+            </div>
+            <div id="userMenu" class="user-menu" style="display: none;">
+                <div class="user-btn" onclick="toggleDropdown()">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <span id="userName">用户</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="dropdown" id="dropdown">
+                    <div class="dropdown-item" onclick="location.href='/admin'">
+                        <i class="fas fa-cog"></i> 管理后台
+                    </div>
+                    <div class="dropdown-item logout" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> 退出登录
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero 区域 -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="avatar-container">
+                    <div class="avatar">C</div>
+                    <div class="avatar-ring"></div>
+                </div>
+                <h1>你好，我是 <span>Choril</span></h1>
+                <p class="subtitle">
+                    全栈开发者 / AI 爱好者 / 终身学习者<br>
+                    热爱技术，享受创造，追求卓越
+                </p>
+                <div class="hero-buttons">
+                    <a href="#projects" class="btn btn-primary">查看项目</a>
+                    <a href="#comments" class="btn btn-outline">留言板</a>
+                </div>
+                <div class="social-links">
+                    <a href="#" title="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="mailto:hello@choril.icu" title="Email"><i class="fas fa-envelope"></i></a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于我 -->
+        <section id="about" class="section">
+            <div class="section-title">
+                <h2>关于 <span>我</span></h2>
+                <p>了解更多关于我的故事</p>
+            </div>
+            <div class="about-bio" id="aboutBio">
+                <!-- 个人简介将通过 JS 加载 -->
+            </div>
+            <div class="about-grid">
+                <div class="about-card">
+                    <i class="fas fa-code"></i>
+                    <h3>全栈开发</h3>
+                    <p>精通前后端开发，熟悉 React、Vue、Node.js、Python 等技术栈，能够独立完成完整的Web应用开发。</p>
+                </div>
+                <div class="about-card">
+                    <i class="fas fa-robot"></i>
+                    <h3>AI 探索者</h3>
+                    <p>对人工智能充满热情，持续学习机器学习、深度学习技术，探索 AI 在实际场景中的应用。</p>
+                </div>
+                <div class="about-card">
+                    <i class="fas fa-lightbulb"></i>
+                    <h3>终身学习者</h3>
+                    <p>保持好奇心，不断学习新技术、新知识，相信技术可以改变世界，用代码创造价值。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 技能 -->
+        <section id="skills" class="section">
+            <div class="section-title">
+                <h2>技能 <span>树</span></h2>
+                <p>我的技术栈和专业领域</p>
+            </div>
+            <div class="skills-container">
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <span class="skill-name">JavaScript / TypeScript</span>
+                        <span class="skill-percent">95%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-progress" style="width: 95%;"></div>
+                    </div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <span class="skill-name">React / Vue</span>
+                        <span class="skill-percent">90%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-progress" style="width: 90%;"></div>
+                    </div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <span class="skill-name">Node.js</span>
+                        <span class="skill-percent">88%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-progress" style="width: 88%;"></div>
+                    </div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <span class="skill-name">Python</span>
+                        <span class="skill-percent">85%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-progress" style="width: 85%;"></div>
+                    </div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <span class="skill-name">数据库 (MySQL/MongoDB)</span>
+                        <span class="skill-percent">82%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-progress" style="width: 82%;"></div>
+                    </div>
+                </div>
+                <div class="skill-card">
+                    <div class="skill-header">
+                        <span class="skill-name">Docker / DevOps</span>
+                        <span class="skill-percent">78%</span>
+                    </div>
+                    <div class="skill-bar">
+                        <div class="skill-progress" style="width: 78%;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 教育背景 -->
+        <section id="education" class="section">
+            <div class="section-title">
+                <h2>教育 <span>背景</span></h2>
+                <p>我的求学经历</p>
+            </div>
+            <div class="timeline" id="educationList">
+                <!-- 教育背景将通过 JS 加载 -->
+            </div>
+        </section>
+
+        <!-- 工作经历 -->
+        <section id="experience" class="section">
+            <div class="section-title">
+                <h2>工作 <span>经历</span></h2>
+                <p>我的职业旅程</p>
+            </div>
+            <div class="timeline" id="experienceList">
+                <!-- 工作经历将通过 JS 加载 -->
+            </div>
+        </section>
+
+        <!-- 项目 -->
+        <section id="projects" class="section">
+            <div class="section-title">
+                <h2>项目 <span>作品</span></h2>
+                <p>我引以为豪的一些项目</p>
+            </div>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-image">🤖</div>
+                    <div class="project-content">
+                        <h3>AI 助手平台</h3>
+                        <p>基于大语言模型的智能助手系统，支持多轮对话、知识问答、文档分析等功能。</p>
+                        <div class="project-tags">
+                            <span class="tag">Python</span>
+                            <span class="tag">FastAPI</span>
+                            <span class="tag">OpenAI</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image">📊</div>
+                    <div class="project-content">
+                        <h3>数据可视化平台</h3>
+                        <p>企业级数据可视化解决方案，支持多种图表类型，实时数据更新，自定义仪表盘。</p>
+                        <div class="project-tags">
+                            <span class="tag">React</span>
+                            <span class="tag">D3.js</span>
+                            <span class="tag">Node.js</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image">🛒</div>
+                    <div class="project-content">
+                        <h3>电商平台系统</h3>
+                        <p>全栈电商解决方案，包含商品管理、购物车、订单系统、支付集成等完整功能。</p>
+                        <div class="project-tags">
+                            <span class="tag">Vue</span>
+                            <span class="tag">Express</span>
+                            <span class="tag">MongoDB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 留言板 -->
+        <section id="comments" class="section">
+            <div class="section-title">
+                <h2>留言 <span>板</span></h2>
+                <p>欢迎留下你的足迹</p>
+            </div>
+            <div class="comments-section">
+                <div class="comment-form">
+                    <textarea id="commentInput" placeholder="写下你的想法..."></textarea>
+                    <button class="btn btn-primary" onclick="submitComment()">发表留言</button>
+                </div>
+                <div class="comments-list" id="commentsList">
+                    <!-- 评论将通过 JS 加载 -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>© 2026 Choril. All rights reserved. Made with choril.</p>
+        <p style="margin-top: 0.5rem;">
+            <a href="/admin.html">管理后台</a>
+        </p>
+    </footer>
+
+    <!-- 登录模态框 -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('login')">&times;</button>
+            <h2>欢迎<span>回来</span></h2>
+            <p>登录你的账户继续</p>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>邮箱</label>
+                    <input type="email" id="loginEmail" placeholder="请输入邮箱" required>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="loginPassword" placeholder="请输入密码" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">登录</button>
+            </form>
+            <div class="divider"><span>或</span></div>
+            <p class="switch-form">还没有账户？<a href="#" onclick="switchModal('register')">立即注册</a></p>
+        </div>
+    </div>
+
+    <!-- 注册模态框 -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('register')">&times;</button>
+            <h2>创建<span>账户</span></h2>
+            <p>加入我们，开始你的旅程</p>
+            <form onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="registerUsername" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label>邮箱</label>
+                    <input type="email" id="registerEmail" placeholder="请输入邮箱" required>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="registerPassword" placeholder="请输入密码（至少6位）" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>确认密码</label>
+                    <input type="password" id="registerConfirmPassword" placeholder="请再次输入密码" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">注册</button>
+            </form>
+            <div class="divider"><span>或</span></div>
+            <p class="switch-form">已有账户？<a href="#" onclick="switchModal('login')">立即登录</a></p>
+        </div>
+    </div>
+
+    <script>
+        // API 基础路径
+        // 混合部署：API 请求指向后端域名
+        const API_BASE = window.location.hostname === 'localhost' ? '' : 'https://api.choril.icu';
+
+        // Token 管理
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+        function setToken(token) {
+            localStorage.setItem('token', token);
+        }
+
+        function removeToken() {
+            localStorage.removeItem('token');
+        }
+
+        function getUser() {
+            const user = localStorage.getItem('user');
+            return user ? JSON.parse(user) : null;
+        }
+
+        function setUser(user) {
+            localStorage.setItem('user', JSON.stringify(user));
+        }
+
+        function removeUser() {
+            localStorage.removeItem('user');
+        }
+
+        // 检查登录状态
+        function checkAuth() {
+            const token = getToken();
+            const user = getUser();
+            
+            if (token && user) {
+                document.getElementById('authButtons').style.display = 'none';
+                document.getElementById('userMenu').style.display = 'block';
+                document.getElementById('userName').textContent = user.username;
+                document.getElementById('userAvatar').textContent = user.username.charAt(0).toUpperCase();
+            } else {
+                document.getElementById('authButtons').style.display = 'flex';
+                document.getElementById('userMenu').style.display = 'none';
+            }
+        }
+
+        // 加载个人主页数据
+        async function loadHomepageData() {
+            try {
+                const profileRes = await fetch(`${API_BASE}/api/profile`);
+                const profile = await profileRes.json();
+                
+                if (profile) {
+                    const avatarEl = document.querySelector('.avatar');
+                    if (profile.avatar) {
+                        avatarEl.innerHTML = `<img src="${profile.avatar}" alt="头像" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+                    } else {
+                        avatarEl.textContent = profile.name ? profile.name.charAt(0).toUpperCase() : 'C';
+                    }
+                    
+                    const heroTitle = document.querySelector('.hero h1');
+                    if (heroTitle && profile.name) {
+                        heroTitle.innerHTML = `你好，我是 <span>${profile.name}</span>`;
+                    }
+                    
+                    const heroSubtitle = document.querySelector('.hero .subtitle');
+                    if (heroSubtitle && profile.title) {
+                        heroSubtitle.textContent = profile.title;
+                    }
+                    
+                    const socialLinks = document.querySelector('.social-links');
+                    if (socialLinks && profile) {
+                        let linksHtml = '';
+                        if (profile.github) linksHtml += `<a href="${profile.github}" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>`;
+                        if (profile.twitter) linksHtml += `<a href="${profile.twitter}" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>`;
+                        if (profile.linkedin) linksHtml += `<a href="${profile.linkedin}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>`;
+                        if (profile.email) linksHtml += `<a href="mailto:${profile.email}" title="Email"><i class="fas fa-envelope"></i></a>`;
+                        if (profile.website) linksHtml += `<a href="${profile.website}" target="_blank" title="Website"><i class="fas fa-globe"></i></a>`;
+                        socialLinks.innerHTML = linksHtml;
+                    }
+                    
+                    document.title = `${profile.name || 'Choril'} - 个人主页`;
+                    
+                    // 加载个人简介（滚动到可视区域时流式打字）
+                    const aboutBio = document.getElementById('aboutBio');
+                    if (aboutBio && profile.bio) {
+                        // 提取纯文本内容
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = profile.bio;
+                        const textContent = tempDiv.textContent || tempDiv.innerText || '';
+                        
+                        // 清空容器，初始不显示
+                        aboutBio.innerHTML = '';
+                        aboutBio.style.display = 'block';
+                        aboutBio.dataset.text = textContent;
+                        aboutBio.dataset.html = profile.bio;
+                        aboutBio.dataset.typed = 'false';
+                        
+                        // 创建打字光标（初始隐藏）
+                        const cursor = document.createElement('span');
+                        cursor.className = 'typing-cursor';
+                        cursor.textContent = '▊';
+                        cursor.style.opacity = '0';
+                        aboutBio.appendChild(cursor);
+                    }
+                }
+            } catch (err) {
+                console.error('加载个人信息失败:', err);
+            }
+            
+            try {
+                const skillsRes = await fetch(`${API_BASE}/api/skills`);
+                const skills = await skillsRes.json();
+                
+                const skillsContainer = document.querySelector('.skills-container');
+                if (skillsContainer && skills.length > 0) {
+                    skillsContainer.innerHTML = skills.map(s => `
+                        <div class="skill-card">
+                            <div class="skill-header">
+                                <span class="skill-name">${s.name}</span>
+                                <span class="skill-percent">${s.level}%</span>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-progress" style="width: ${s.level}%;"></div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('加载技能失败:', err);
+            }
+            
+            try {
+                const projectsRes = await fetch(`${API_BASE}/api/projects`);
+                const projects = await projectsRes.json();
+                
+                const projectsGrid = document.querySelector('.projects-grid');
+                if (projectsGrid && projects.length > 0) {
+                    projectsGrid.innerHTML = projects.map(p => `
+                        <div class="project-card">
+                            <div class="project-image">${p.image ? `<img src="${p.image}" alt="${p.title}" style="width:100%;height:100%;object-fit:cover;">` : '🚀'}</div>
+                            <div class="project-content">
+                                <h3>${p.title}</h3>
+                                <p>${p.description || ''}</p>
+                                <div class="project-tags">
+                                    ${p.technologies ? p.technologies.split(',').map(t => `<span class="tag">${t.trim()}</span>`).join('') : ''}
+                                    ${p.link ? `<a href="${p.link}" target="_blank" class="btn btn-sm btn-primary" style="margin-left:auto;padding:0.3rem 0.8rem;"><i class="fas fa-external-link-alt"></i> 查看</a>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('加载项目失败:', err);
+            }
+            
+            try {
+                const eduRes = await fetch(`${API_BASE}/api/education`);
+                const education = await eduRes.json();
+                
+                const eduContainer = document.getElementById('educationList');
+                if (eduContainer && education.length > 0) {
+                    eduContainer.innerHTML = education.map(e => `
+                        <div class="timeline-item">
+                            <div class="timeline-header">
+                                <div>
+                                    <div class="timeline-title">${e.school}</div>
+                                    <div class="timeline-subtitle">${e.degree} - ${e.major}</div>
+                                </div>
+                                <div class="timeline-date">${e.start_date} ~ ${e.end_date}</div>
+                            </div>
+                            <div class="timeline-content">${e.description || ''}</div>
+                        </div>
+                    `).join('');
+                } else if (eduContainer) {
+                    eduContainer.innerHTML = '<p style="color: var(--gray); text-align: center;">暂无教育背景</p>';
+                }
+            } catch (err) {
+                console.error('加载教育背景失败:', err);
+            }
+            
+            try {
+                const expRes = await fetch(`${API_BASE}/api/experience`);
+                const experience = await expRes.json();
+                
+                const expContainer = document.getElementById('experienceList');
+                if (expContainer && experience.length > 0) {
+                    expContainer.innerHTML = experience.map(e => `
+                        <div class="timeline-item">
+                            <div class="timeline-header">
+                                <div>
+                                    <div class="timeline-title">${e.company}</div>
+                                    <div class="timeline-subtitle">${e.position}</div>
+                                </div>
+                                <div class="timeline-date">${e.start_date} ~ ${e.end_date || '至今'}</div>
+                            </div>
+                            <div class="timeline-content">${e.description || ''}</div>
+                            ${e.technologies ? `<div class="timeline-tags">${e.technologies.split(',').map(t => `<span class="tag">${t.trim()}</span>`).join('')}</div>` : ''}
+                        </div>
+                    `).join('');
+                } else if (expContainer) {
+                    expContainer.innerHTML = '<p style="color: var(--gray); text-align: center;">暂无工作经历</p>';
+                }
+            } catch (err) {
+                console.error('加载工作经历失败:', err);
+            }
+        }
+
+        // 模态框操作
+        function openModal(type) {
+            document.getElementById(type + 'Modal').classList.add('active');
+        }
+
+        function closeModal(type) {
+            document.getElementById(type + 'Modal').classList.remove('active');
+        }
+
+        function switchModal(type) {
+            closeModal(type === 'login' ? 'register' : 'login');
+            openModal(type);
+        }
+
+        // 下拉菜单
+        function toggleDropdown() {
+            document.getElementById('dropdown').classList.toggle('active');
+        }
+
+        // 点击外部关闭下拉菜单
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-menu')) {
+                document.getElementById('dropdown').classList.remove('active');
+            }
+        });
+
+        // Toast 提示
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // 登录处理
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    setToken(data.token);
+                    setUser(data.user);
+                    closeModal('login');
+                    checkAuth();
+                    showToast('登录成功！');
+                } else {
+                    showToast(data.error || '登录失败', 'error');
+                }
+            } catch (err) {
+                showToast('网络错误，请重试', 'error');
+            }
+        }
+
+        // 注册处理
+        async function handleRegister(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showToast('两次密码不一致', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast('注册成功，请登录！');
+                    switchModal('login');
+                } else {
+                    showToast(data.error || '注册失败', 'error');
+                }
+            } catch (err) {
+                showToast('网络错误，请重试', 'error');
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            removeToken();
+            removeUser();
+            checkAuth();
+            showToast('已退出登录');
+        }
+
+        // 加载评论
+        async function loadComments() {
+            try {
+                const res = await fetch(`${API_BASE}/api/comments`);
+                const comments = await res.json();
+
+                const container = document.getElementById('commentsList');
+                
+                if (comments.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--gray);">暂无留言，来抢个沙发吧~</p>';
+                    return;
+                }
+
+                container.innerHTML = comments.map(comment => `
+                    <div class="comment">
+                        <div class="comment-header">
+                            <span class="comment-author">${comment.username || '匿名用户'}</span>
+                            <span class="comment-time">${new Date(comment.created_at).toLocaleString()}</span>
+                        </div>
+                        <div class="comment-content">${comment.content}</div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('加载评论失败:', err);
+            }
+        }
+
+        // 提交评论
+        async function submitComment() {
+            const token = getToken();
+            
+            if (!token) {
+                showToast('请先登录', 'error');
+                openModal('login');
+                return;
+            }
+
+            const content = document.getElementById('commentInput').value.trim();
+            
+            if (!content) {
+                showToast('请输入留言内容', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ content })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    document.getElementById('commentInput').value = '';
+                    loadComments();
+                    showToast('留言成功！');
+                } else {
+                    showToast(data.error || '留言失败', 'error');
+                }
+            } catch (err) {
+                showToast('网络错误，请重试', 'error');
+            }
+        }
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // 隐藏加载遮罩
+        function hidePageLoader() {
+            const loader = document.getElementById('pageLoader');
+            if (loader) {
+                loader.classList.add('hidden');
+                setTimeout(() => loader.remove(), 500);
+            }
+        }
+
+        // 个人简介打字效果（循环播放）
+        let typingInterval = null;
+        let isTyping = false;
+        
+        function startTypingEffect() {
+            const aboutBio = document.getElementById('aboutBio');
+            if (!aboutBio) return;
+            
+            const textContent = aboutBio.dataset.text;
+            const htmlContent = aboutBio.dataset.html;
+            if (!textContent) return;
+            
+            // 如果已经在打字，不重复启动
+            if (isTyping) return;
+            isTyping = true;
+            
+            const typeSpeed = 60; // 打字速度（毫秒）
+            
+            // 清空内容，只保留光标
+            aboutBio.innerHTML = '';
+            const cursor = document.createElement('span');
+            cursor.className = 'typing-cursor';
+            cursor.textContent = '▊';
+            cursor.style.opacity = '1';
+            aboutBio.appendChild(cursor);
+            
+            let index = 0;
+            const punctuationDelay = 200; // 标点符号延迟（毫秒）
+            const punctuationMarks = ['。', '，', '、', '；', '：', '？', '！', '.', ',', ';', ':', '?', '!'];
+            
+            function typeChar() {
+                if (index < textContent.length) {
+                    const char = textContent.charAt(index);
+                    cursor.insertAdjacentText('beforebegin', char);
+                    index++;
+                    
+                    // 检查是否是标点符号，如果是则增加延迟
+                    const isPunctuation = punctuationMarks.includes(char);
+                    const delay = isPunctuation ? typeSpeed + punctuationDelay : typeSpeed;
+                    
+                    typingInterval = setTimeout(typeChar, delay);
+                }
+                // 打字完成，光标持续闪烁，不循环
+            }
+            
+            typeChar();
+        }
+        
+        function stopTypingEffect() {
+            if (typingInterval) {
+                clearTimeout(typingInterval);
+                typingInterval = null;
+            }
+            isTyping = false;
+            // 清空内容，下次进入时重新开始
+            const aboutBio = document.getElementById('aboutBio');
+            if (aboutBio) {
+                aboutBio.innerHTML = '';
+            }
+        }
+
+        // 滚动监听 - 当个人简介区域进入可视区域时开始打字，离开时停止
+        function setupScrollObserver() {
+            const aboutBio = document.getElementById('aboutBio');
+            if (!aboutBio) return;
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        startTypingEffect();
+                    } else {
+                        stopTypingEffect();
+                    }
+                });
+            }, {
+                threshold: 0.3 // 当30%的区域可见时触发
+            });
+            
+            observer.observe(aboutBio);
+        }
+
+        // 初始化 - 并行加载所有数据
+        async function init() {
+            checkAuth();
+            await Promise.all([
+                loadHomepageData(),
+                loadComments()
+            ]);
+            hidePageLoader();
+            setupScrollObserver(); // 设置滚动监听
+        }
+        
+        init();
+    </script>
+</body>
+</html>
