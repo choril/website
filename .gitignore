@@ -1,6 +1,46 @@
-# 服务器端文件
+# 依赖目录
 node_modules/
 
-# 敏感信息
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 运行时数据
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 生成的文件
+dist/
+build/
+
+# 环境变量文件
 .env
-*.pem
+.env.local
+.env.*.local
+
+# 编辑器配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 数据库文件（本地开发）
+data.db
+*.db
+
+# 上传的文件（用户生成内容）
+public/uploads/
+
+# 测试覆盖率
+coverage/
+
+# 临时文件
+tmp/
+temp/
+*.tmp

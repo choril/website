@@ -1108,9 +1108,14 @@ app.get(/^\/(?!api\/).*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 启动服务器
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 服务器运行在 http://localhost:${PORT}`);
-    console.log(`📧 默认管理员账户: admin / admin123`);
-    console.log(`🔐 管理员验证码: ${ADMIN_CODE}`);
-});
+// 启动服务器（本地开发时使用）
+if (require.main === module) {
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 服务器运行在 http://localhost:${PORT}`);
+        console.log(`📧 默认管理员账户: admin / admin123`);
+        console.log(`🔐 管理员验证码: ${ADMIN_CODE}`);
+    });
+}
+
+// 导出 app 供 Serverless 使用（ESA 函数计算）
+module.exports = app;

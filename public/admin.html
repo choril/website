@@ -850,6 +850,7 @@
             <div class="bottom-nav-item" onclick="showPage('experience')"><i class="fas fa-briefcase"></i><span>经历</span></div>
             <div class="bottom-nav-item" onclick="showPage('projects')"><i class="fas fa-project-diagram"></i><span>项目</span></div>
             <div class="bottom-nav-item" onclick="showPage('users')"><i class="fas fa-users"></i><span>用户</span></div>
+            <div class="bottom-nav-item" onclick="showPage('comments')"><i class="fas fa-comments"></i><span>评论</span></div>
         </nav>
     </div>
 
@@ -959,7 +960,7 @@
     <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
     <script>
         // 混合部署：API 请求指向后端域名
-        const API_BASE = window.location.hostname === 'localhost' ? '' : 'https://api.choril.icu';
+        const API_BASE = '';
         let profileBioQuill = null;
         let eduDescQuill = null;
         let expDescQuill = null;

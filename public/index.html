@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* 代码块使用 JetBrains Mono (~200KB) 替代 Fusion 像素字体 (5.5MB) */
+        code, pre, .code-block {
+            font-family: 'JetBrains Mono', monospace;
             font-display: swap;
         }
     </style>
@@ -247,6 +249,13 @@
             position: relative;
             display: inline-block;
             margin-bottom: 2rem;
+            perspective: 1000px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
         }
 
         .avatar {
@@ -262,20 +271,119 @@
             color: white;
             position: relative;
             z-index: 1;
-            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+            box-shadow: 
+                0 20px 60px rgba(99, 102, 241, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 -40px 40px rgba(0, 0, 0, 0.2),
+                inset 0 40px 40px rgba(255, 255, 255, 0.15);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .avatar::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 15%;
+            width: 30%;
+            height: 20%;
+            background: radial-gradient(ellipse, rgba(255,255,255,0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(2px);
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: inset 0 -40px 40px rgba(0, 0, 0, 0.2), inset 0 40px 40px rgba(255, 255, 255, 0.1);
         }
 
         .avatar-ring {
             position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
             border-radius: 50%;
             border: 3px solid transparent;
             border-top-color: var(--primary);
             border-right-color: var(--secondary);
             animation: spin 3s linear infinite;
+            filter: blur(1px);
+        }
+
+        .avatar-ring-2 {
+            position: absolute;
+            top: -25px;
+            left: -25px;
+            right: -25px;
+            bottom: -25px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-bottom-color: var(--accent);
+            border-left-color: var(--primary);
+            animation: spin 5s linear infinite reverse;
+            opacity: 0.6;
+        }
+
+        .avatar-ring-3 {
+            position: absolute;
+            top: -35px;
+            left: -35px;
+            right: -35px;
+            bottom: -35px;
+            border-radius: 50%;
+            border: 1px dashed rgba(99, 102, 241, 0.3);
+            animation: spin 10s linear infinite;
+        }
+
+        .avatar-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(20px);
+            z-index: 0;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .avatar-particles {
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            right: -50px;
+            bottom: -50px;
+            pointer-events: none;
+        }
+
+        .avatar-particles span {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: particle-float 3s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(0); }
+            50% { transform: translateY(-15px) rotateX(5deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.8; }
+        }
+
+        @keyframes particle-float {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.8; }
+            50% { transform: translateY(-20px) scale(1.5); opacity: 1; }
         }
 
         @keyframes spin {
@@ -1054,8 +1162,21 @@
         <section class="hero">
             <div class="hero-content">
                 <div class="avatar-container">
-                    <div class="avatar">C</div>
-                    <div class="avatar-ring"></div>
+                    <div class="avatar-glow"></div>
+                    <div class="avatar-wrapper" id="avatarWrapper">
+                        <div class="avatar">C</div>
+                        <div class="avatar-ring"></div>
+                        <div class="avatar-ring-2"></div>
+                        <div class="avatar-ring-3"></div>
+                        <div class="avatar-particles">
+                            <span style="top: 10%; left: 20%; animation-delay: 0s;"></span>
+                            <span style="top: 30%; left: 80%; animation-delay: 0.5s;"></span>
+                            <span style="top: 70%; left: 10%; animation-delay: 1s;"></span>
+                            <span style="top: 50%; left: 90%; animation-delay: 1.5s;"></span>
+                            <span style="top: 85%; left: 60%; animation-delay: 2s;"></span>
+                            <span style="top: 15%; left: 70%; animation-delay: 2.5s;"></span>
+                        </div>
+                    </div>
                 </div>
                 <h1>你好，我是 <span>Choril</span></h1>
                 <p class="subtitle">
@@ -1316,7 +1437,96 @@
     <script>
         // API 基础路径
         // 混合部署：API 请求指向后端域名
-        const API_BASE = window.location.hostname === 'localhost' ? '' : 'https://api.choril.icu';
+        const API_BASE = '';
+
+        // 3D 头像鼠标跟踪效果
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatarWrapper = document.getElementById('avatarWrapper');
+            const avatarContainer = document.querySelector('.avatar-container');
+            
+            if (avatarWrapper && avatarContainer) {
+                // PC端 - 鼠标跟踪
+                avatarContainer.addEventListener('mousemove', function(e) {
+                    const rect = avatarContainer.getBoundingClientRect();
+                    const x = e.clientX - rect.left - rect.width / 2;
+                    const y = e.clientY - rect.top - rect.height / 2;
+                    
+                    const rotateX = (y / rect.height) * -20;
+                    const rotateY = (x / rect.width) * 20;
+                    
+                    avatarWrapper.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                });
+                
+                avatarContainer.addEventListener('mouseleave', function() {
+                    avatarWrapper.style.transform = 'rotateX(0) rotateY(0)';
+                    avatarWrapper.style.transition = 'transform 0.5s ease-out';
+                });
+                
+                avatarContainer.addEventListener('mouseenter', function() {
+                    avatarWrapper.style.transition = 'transform 0.1s ease-out';
+                });
+                
+                // 移动端 - 触摸跟踪
+                avatarContainer.addEventListener('touchmove', function(e) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const rect = avatarContainer.getBoundingClientRect();
+                    const x = touch.clientX - rect.left - rect.width / 2;
+                    const y = touch.clientY - rect.top - rect.height / 2;
+                    
+                    const rotateX = (y / rect.height) * -25;
+                    const rotateY = (x / rect.width) * 25;
+                    
+                    avatarWrapper.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                }, { passive: false });
+                
+                avatarContainer.addEventListener('touchend', function() {
+                    avatarWrapper.style.transform = 'rotateX(0) rotateY(0)';
+                    avatarWrapper.style.transition = 'transform 0.5s ease-out';
+                });
+                
+                // 移动端 - 陀螺仪效果
+                if (window.DeviceOrientationEvent) {
+                    let gyroEnabled = false;
+                    
+                    // iOS 13+ 需要请求权限
+                    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                        avatarContainer.addEventListener('click', function() {
+                            if (!gyroEnabled) {
+                                DeviceOrientationEvent.requestPermission()
+                                    .then(function(response) {
+                                        if (response === 'granted') {
+                                            gyroEnabled = true;
+                                            enableGyro();
+                                        }
+                                    })
+                                    .catch(console.error);
+                            }
+                        });
+                    } else {
+                        // Android 和其他设备直接启用
+                        enableGyro();
+                    }
+                    
+                    function enableGyro() {
+                        window.addEventListener('deviceorientation', function(e) {
+                            // 只在移动设备且没有触摸时使用陀螺仪
+                            if (window.innerWidth <= 768) {
+                                const gamma = e.gamma || 0; // 左右倾斜 (-90 to 90)
+                                const beta = e.beta || 0;   // 前后倾斜 (-180 to 180)
+                                
+                                // 限制旋转角度范围
+                                const rotateX = Math.max(-20, Math.min(20, (beta - 45) * 0.5));
+                                const rotateY = Math.max(-20, Math.min(20, gamma * 0.3));
+                                
+                                avatarWrapper.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                                avatarWrapper.style.transition = 'transform 0.1s ease-out';
+                            }
+                        });
+                    }
+                }
+            }
+        });
 
         // Token 管理
         function getToken() {

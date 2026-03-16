@@ -1,0 +1,15 @@
+{
+  "build": {
+    "command": "npm install"
+  },
+  "function": {
+    "entry": "server.js",
+    "runtime": "nodejs18"
+  },
+  "routes": [
+    {
+      "path": "/*",
+      "target": "function"
+    }
+  ]
+}
